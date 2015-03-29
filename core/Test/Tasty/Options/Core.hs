@@ -5,6 +5,7 @@ module Test.Tasty.Options.Core
   ( NumThreads(..)
   , Timeout(..)
   , mkTimeout
+  , Verbose(..)
   , coreOptions
   )
   where
@@ -95,11 +96,23 @@ mkTimeout n =
   Timeout n $
     showFixed True (fromInteger n / (10^6) :: Micro) ++ "s"
 
+-- | This option, when set to 'True', specifies that we should run in the
+-- «verbose» mode
+newtype Verbose = Verbose Bool
+  deriving (Show, Typeable)
+instance IsOption Verbose where
+  defaultValue = Verbose False
+  parseValue = fmap Verbose . safeRead
+  optionName = return "verbose"
+  optionHelp = return "Produce more verbose output"
+  optionCLParser = flagCLParser (Just 'v') (Verbose True)
+
 -- | The list of all core options, i.e. the options not specific to any
 -- provider or ingredient, but to tasty itself. Currently contains
--- 'TestPattern' and 'Timeout'.
+-- 'TestPattern', 'Timeout', and 'Verbose'.
 coreOptions :: [OptionDescription]
 coreOptions =
   [ Option (Proxy :: Proxy TestPattern)
   , Option (Proxy :: Proxy Timeout)
+  , Option (Proxy :: Proxy Verbose)
   ]

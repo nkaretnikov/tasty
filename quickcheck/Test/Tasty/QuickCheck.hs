@@ -15,6 +15,7 @@ module Test.Tasty.QuickCheck
   , QC(..)
   ) where
 
+import Test.Tasty (Verbose (..))
 import Test.Tasty.Providers
 import Test.Tasty.Options
 import qualified Test.QuickCheck as QC
@@ -117,6 +118,7 @@ instance IsTest QC where
     , Option (Proxy :: Proxy QuickCheckShowReplay)
     , Option (Proxy :: Proxy QuickCheckMaxSize)
     , Option (Proxy :: Proxy QuickCheckMaxRatio)
+    , Option (Proxy :: Proxy Verbose)
     ]
 
   run opts (QC prop) yieldProgress = do
@@ -126,8 +128,14 @@ instance IsTest QC where
       QuickCheckShowReplay showReplay = lookupOption opts
       QuickCheckMaxSize    maxSize    = lookupOption opts
       QuickCheckMaxRatio   maxRatio   = lookupOption opts
-      args = QC.stdArgs { QC.chatty = False, QC.maxSuccess = nTests, QC.maxSize = maxSize, QC.replay = replay, QC.maxDiscardRatio = maxRatio}
-    r <- QC.quickCheckWithResult args prop
+      Verbose              verbose    = lookupOption opts
+      args = QC.stdArgs { QC.chatty          = verbose
+                        , QC.maxSuccess      = nTests
+                        , QC.maxSize         = maxSize
+                        , QC.replay          = replay
+                        , QC.maxDiscardRatio = maxRatio }
+    r <- QC.quickCheckWithResult args $
+           (if verbose then QC.verbose else id) prop
 
     qcOutput <- formatMessage $ QC.output r
     let qcOutputNl =

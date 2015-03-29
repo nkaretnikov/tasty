@@ -25,6 +25,7 @@ module Test.Tasty
   -- ** Standard options
   , Timeout(..)
   , mkTimeout
+  , Verbose(..)
   -- * Resources
   -- | Sometimes several tests need to access the same resource — say,
   -- a file or a socket. We want to create or grab the resource before
